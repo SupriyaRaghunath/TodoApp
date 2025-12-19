@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, StyleSheet, TextInput, Pressable, Text } from 'react-native';
 import Checkbox from './Checkbox';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { TaskContext } from '../providers/TaskProvider';
 
 const AddTask = ({ navigation }) => {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [check, setCheck] = useState(true);
 
+  const { addTask } = useContext(TaskContext);
   let onChangeTitle = val => {
     setTitle(val);
   };
@@ -24,13 +26,13 @@ const AddTask = ({ navigation }) => {
   let onSubmit = async () => {
     let validate = () => true;
 
-    AsyncStorage.setItem(
+    addTask({
+      id: `${Date.now()}-${Math.random()}`,
       title,
-      JSON.stringify({
-        category: category,
-        done: check,
-      }),
-    );
+      category,
+      done: check,
+      createdAt: Date.now(),
+    });
   };
 
   let header = (

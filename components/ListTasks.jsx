@@ -1,27 +1,11 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { View, StyleSheet, Pressable, Text, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CheckBox from './Checkbox';
+import { TaskContext } from '../providers/TaskProvider';
 
 const ListTasks = ({ navigation }) => {
-  let [tasks, setTasks] = useState({});
-
-  let getItems = async () => {
-    let keys = await AsyncStorage.getAllKeys();
-    let data = await AsyncStorage.multiGet(keys);
-
-    let _data = {};
-
-    data.forEach(item => {
-      _data[item[0]] = JSON.parse(item[1]);
-    });
-
-    setTasks(_data);
-  };
-  useEffect(() => {
-    getItems();
-  }, []);
+  let { tasks, deleteTask } = useContext(TaskContext);
 
   let header = (
     <View style={styles.header}>
@@ -32,18 +16,18 @@ const ListTasks = ({ navigation }) => {
   );
 
   let renderItem = ({ item, index }) => {
-    let { done, category } = tasks[item];
+    let { done, category } = item;
 
-    let deleteTask = async item => {
-      AsyncStorage.removeItem(item);
+    let remove = async id => {
+      deleteTask(id);
     };
 
     return (
       <View style={{ borderWidth: 1 }}>
-        <Text>{item}</Text>
+        <Text>{item.title}</Text>
         <Text>{category || ''}</Text>
         <CheckBox checked={done} />
-        <Pressable style={styles.pressable} onPress={() => deleteTask(item)}>
+        <Pressable style={styles.pressable} onPress={() => remove(item.id)}>
           <Text>delete</Text>
         </Pressable>
       </View>
@@ -53,7 +37,7 @@ const ListTasks = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View>{header}</View>
-      <FlatList data={Object.keys(tasks)} renderItem={renderItem} />
+      <FlatList data={tasks} renderItem={renderItem} keyExtractor={id => id} />
     </SafeAreaView>
   );
 };
